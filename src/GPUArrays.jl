@@ -14,13 +14,17 @@ using Base.Cartesian
 
 using FFTW
 
+using SimpleTraits
+using MacroTools
+using InteractiveUtils
+
 include("abstractarray.jl")
 include("abstract_gpu_interface.jl")
 include("ondevice.jl")
 include("base.jl")
 include("construction.jl")
 include("blas.jl")
-include("broadcast.jl")
+
 include("devices.jl")
 include("heuristics.jl")
 include("indexing.jl")
@@ -29,6 +33,8 @@ include("mapreduce.jl")
 include("vectors.jl")
 include("convolution.jl")
 include("random.jl")
+include("wrapper.jl")
+include("broadcast.jl")
 
 include("array.jl")
 

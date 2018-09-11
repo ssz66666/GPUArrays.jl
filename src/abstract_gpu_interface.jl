@@ -107,9 +107,9 @@ end
 # end
 
 # Unpack wrapper types to discover the storage format
-_trecurse(::Type{<:LinearAlgebra.Transpose{<:Any,T}}) where T = _trecurse(T)
-_trecurse(::Type{<:LinearAlgebra.Adjoint{<:Any,T}}) where T = _trecurse(T)
-_trecurse(::Type{<:SubArray{<:Any,<:Any,T}}) where T = _trecurse(T)
+#_trecurse(::Type{<:LinearAlgebra.Transpose{<:Any,T}}) where T = _trecurse(T)
+#_trecurse(::Type{<:LinearAlgebra.Adjoint{<:Any,T}}) where T = _trecurse(T)
+#_trecurse(::Type{<:SubArray{<:Any,<:Any,T}}) where T = _trecurse(T)
 _trecurse(::Type{T}) where T = T
 
 """

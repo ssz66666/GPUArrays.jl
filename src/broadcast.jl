@@ -22,10 +22,10 @@ BroadcastStyle(::Type{<:SubArray{<:Any,<:Any,T}}) where {T<:GPUArray} = Broadcas
 
 # This Union is a hack. Ideally Base would have a Transpose <: WrappedArray <: AbstractArray
 # and we could define our methods in terms of Union{GPUArray, WrappedArray{<:Any, <:GPUArray}}
-const GPUDestArray = Union{GPUArray,
-                           LinearAlgebra.Transpose{<:Any,<:GPUArray},
-                           LinearAlgebra.Adjoint{<:Any,<:GPUArray},
-                           SubArray{<:Any,<:Any,<:GPUArray}}
+# const GPUDestArray = Union{GPUArray,
+#                            LinearAlgebra.Transpose{<:Any,<:GPUArray},
+#                            LinearAlgebra.Adjoint{<:Any,<:GPUArray},
+#                            SubArray{<:Any,<:Any,<:GPUArray}}
 
 # This method is responsible for selection the output type of broadcast
 function Base.similar(bc::Broadcasted{<:ArrayStyle{GPU}}, ::Type{ElType}) where
@@ -47,14 +47,18 @@ end
 #   with `Style`
 #
 # For more information see the Base documentation.
-@inline Base.copyto!(dest::GPUDestArray, bc::Broadcasted{Nothing}) = _copyto!(dest, bc)
+@traitfn @inline Base.copyto!(dest::A, bc::Broadcasted{Nothing}) where {A<:GPUDestArray; IsGPUOptimizable{A}} = _copyto!(dest, bc)
+@traitfn @inline Base.copyto!(dest::A, bc::Broadcasted{Nothing}) where {A<:GPUDestArray; Not{IsGPUOptimizable{A}}} =
+    invoke(Base.copyto!,Tuple{AbstractArray,Broadcasted{Nothing}},dest,bc)
 @inline Base.copyto!(dest, bc::Broadcasted{<:GPUArray}) =
     _copyto!(dest, convert(Broadcasted{Nothing}, bc))
 
 # Base defines this method as a performance optimization, but we don't know how to do
 # `fill!` in general for all `GPUDestArray` so we just go straight to the fallback
-@inline Base.copyto!(dest::GPUDestArray, bc::Broadcasted{<:Broadcast.AbstractArrayStyle{0}}) =
+@traitfn @inline Base.copyto!(dest::A, bc::Broadcasted{<:Broadcast.AbstractArrayStyle{0}}) where {A<:GPUDestArray; IsGPUOptimizable{A}} =
     _copyto!(dest, convert(Broadcasted{Nothing}, bc))
+@traitfn @inline Base.copyto!(dest::A, bc::Broadcasted{<:Broadcast.AbstractArrayStyle{0}}) where {A<:GPUDestArray; Not{IsGPUOptimizable{A}}} =
+    invoke(Base.copyto!,Tuple{AbstractArray,Broadcasted{<:Broadcast.AbstractArrayStyle{0}}},dest,bc)
 
 # Internal method implementing broadcast
 @inline function _copyto!(dest, bc::Broadcasted{Nothing})
